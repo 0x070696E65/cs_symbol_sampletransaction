@@ -32,6 +32,28 @@ namespace CsSymbolSampleTransaction
             Console.WriteLine(Utils.ToHex(alicePrivateKey));
             Console.WriteLine(Utils.ToHex(alicePublicKey));
 
+            // 公開鍵からのアドレス導出
+            var sha3256Digest = new Sha3Digest(256);
+            var sha3256Hash = new byte[sha3256Digest.GetDigestSize()];
+            sha3256Digest.BlockUpdate(alicePublicKey, 0, alicePublicKey.Length);
+            sha3256Digest.DoFinal(sha3256Hash, 0);
+            var digest = new RipeMD160Digest();
+            var ripemdHash = new byte[digest.GetDigestSize()];
+            digest.BlockUpdate(sha3256Hash, 0, sha3256Hash.Length);
+            digest.DoFinal(ripemdHash, 0);
+            var decodedAddress = new byte[24];
+            decodedAddress[0] = 152;
+            Utils.Copy(decodedAddress, ripemdHash, 20, 1);
+            var hash = new byte[20 + 1];
+            Array.Copy(decodedAddress, hash, 20 + 1);
+            var resultHash = new byte[sha3256Digest.GetDigestSize()];
+            sha3256Digest.BlockUpdate(hash, 0, hash.Length);
+            sha3256Digest.DoFinal(resultHash, 0);
+            Utils.Copy(decodedAddress, resultHash, 3, 20 + 1);
+            var padded = new byte[24 + 1];
+            Array.Copy(decodedAddress, padded, decodedAddress.Length);
+            Console.WriteLine(Base32.ToBase32String(padded).Substring(0, 39));
+
             // トランザクション構築
             var version = new byte[] { 1 };
             var networkType = new byte[] { 152 };
@@ -93,7 +115,7 @@ namespace CsSymbolSampleTransaction
             hashableBuffer.AddRange(signature);
             hashableBuffer.AddRange(alicePublicKey);
             hashableBuffer.AddRange(verifiableBuffer);
-            var sha3256Digest = new Sha3Digest(256);
+            //var sha3256Digest = new Sha3Digest(256); 36行目で作成しているので使いまわし
             var transactionHash = new byte[sha3256Digest.GetDigestSize()];
             sha3256Digest.BlockUpdate(hashableBuffer.ToArray(), 0, hashableBuffer.Count);
             sha3256Digest.DoFinal(transactionHash, 0);
@@ -101,7 +123,6 @@ namespace CsSymbolSampleTransaction
             Console.WriteLine("transactionStatus: https://sym-test-02.opening-line.jp:3001/transactionStatus/" + Utils.ToHex(transactionHash));
             Console.WriteLine("confirmed: https://sym-test-02.opening-line.jp:3001/transactions/confirmed/" + Utils.ToHex(transactionHash));
             Console.WriteLine("explorer: https://testnet.symbol.fyi/transactions/" + Utils.ToHex(transactionHash));
-
         }
     }
 
@@ -130,6 +151,23 @@ namespace CsSymbolSampleTransaction
             var str = BitConverter.ToString(bytes);
             str = str.Replace("-", string.Empty);
             return str;
+        }
+
+        internal static void Copy(byte[] dest, byte[] src, int? numElementsToCopy, int destOffset = 0, int srcOffset = 0)
+        {
+            int? length;
+            if (numElementsToCopy == null)
+            {
+                length = dest.Length;
+            }
+            else
+            {
+                length = numElementsToCopy;
+            }
+            for (var i = 0; i < length; ++i)
+            {
+                dest[destOffset + i] = src[srcOffset + i];
+            }
         }
     }
 
