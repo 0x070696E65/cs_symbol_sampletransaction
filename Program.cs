@@ -18,7 +18,7 @@ namespace CsSymbolSampleTransaction
         {
             // アカウント作成
             var privateKey = Utils.RandomBytes(32);
-            var publicKey = new Ed25519PrivateKeyParameters(privateKey, 0).GetEncoded();
+            var publicKey = new Ed25519PrivateKeyParameters(privateKey, 0).GeneratePublicKey().GetEncoded();
             Console.WriteLine(Utils.ToHex(privateKey));
             Console.WriteLine(Utils.ToHex(publicKey));
 
