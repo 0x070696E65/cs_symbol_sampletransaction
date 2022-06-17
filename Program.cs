@@ -18,17 +18,13 @@ namespace CsSymbolSampleTransaction
         {
             // アカウント作成
             var privateKey = Utils.RandomBytes(32);
-            var privateKeyRebuild = new Ed25519PrivateKeyParameters(privateKey, 0);
-            var publicKeyRebuild = privateKeyRebuild.GeneratePublicKey();
-            var publicKey = publicKeyRebuild.GetEncoded();
+            var publicKey = new Ed25519PrivateKeyParameters(privateKey, 0).GetEncoded();
             Console.WriteLine(Utils.ToHex(privateKey));
             Console.WriteLine(Utils.ToHex(publicKey));
 
             // アカウント復元
             var alicePrivateKey = Utils.GetBytes("PRIVATE_KEY");
-            var alicePrivateKeyRebuild = new Ed25519PrivateKeyParameters(alicePrivateKey, 0);
-            var alicePublicKeyRebuild = alicePrivateKeyRebuild.GeneratePublicKey();
-            var alicePublicKey = alicePublicKeyRebuild.GetEncoded();
+            var alicePublicKey = new Ed25519PrivateKeyParameters(alicePrivateKey, 0).GeneratePublicKey().GetEncoded();
             Console.WriteLine(Utils.ToHex(alicePrivateKey));
             Console.WriteLine(Utils.ToHex(alicePublicKey));
 
