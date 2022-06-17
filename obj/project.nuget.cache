@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "jyy8UczenQ8ttn7oLFqLZHMZo24EXGx4+KId3Bs8Y/iUz/lDV26Sge1TjbO8TD8Rpa163WefMZbYaV2Yymr2MA==",
+  "success": true,
+  "projectFilePath": "/Users/matsukawatoshiya/Projects/cs_symbol_sampletransaction/cs_symbol_sampletransaction/cs_symbol_sampletransaction.csproj",
+  "expectedPackageFiles": [
+    "/Users/matsukawatoshiya/.nuget/packages/bouncycastle.netcore/1.9.0/bouncycastle.netcore.1.9.0.nupkg.sha512"
+  ],
+  "logs": []
+}
