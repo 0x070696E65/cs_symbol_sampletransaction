@@ -41,15 +41,16 @@ namespace CsSymbolSampleTransaction
             var ripemdHash = new byte[digest.GetDigestSize()];
             digest.BlockUpdate(sha3256Hash, 0, sha3256Hash.Length);
             digest.DoFinal(ripemdHash, 0);
+
             var decodedAddress = new byte[24];
             decodedAddress[0] = 152;
-            Utils.Copy(decodedAddress, ripemdHash, 20, 1);
+            Array.Copy(ripemdHash, 0, decodedAddress, 1, 20);
             var hash = new byte[20 + 1];
             Array.Copy(decodedAddress, hash, 20 + 1);
             var resultHash = new byte[sha3256Digest.GetDigestSize()];
             sha3256Digest.BlockUpdate(hash, 0, hash.Length);
             sha3256Digest.DoFinal(resultHash, 0);
-            Utils.Copy(decodedAddress, resultHash, 3, 20 + 1);
+            Array.Copy(resultHash, 0, decodedAddress, 20 + 1, 3);
             var padded = new byte[24 + 1];
             Array.Copy(decodedAddress, padded, decodedAddress.Length);
             Console.WriteLine(Base32.ToBase32String(padded).Substring(0, 39));
@@ -151,23 +152,6 @@ namespace CsSymbolSampleTransaction
             var str = BitConverter.ToString(bytes);
             str = str.Replace("-", string.Empty);
             return str;
-        }
-
-        internal static void Copy(byte[] dest, byte[] src, int? numElementsToCopy, int destOffset = 0, int srcOffset = 0)
-        {
-            int? length;
-            if (numElementsToCopy == null)
-            {
-                length = dest.Length;
-            }
-            else
-            {
-                length = numElementsToCopy;
-            }
-            for (var i = 0; i < length; ++i)
-            {
-                dest[destOffset + i] = src[srcOffset + i];
-            }
         }
     }
 
