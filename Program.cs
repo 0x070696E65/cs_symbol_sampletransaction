@@ -10,7 +10,7 @@ using Org.BouncyCastle.Crypto.Digests;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace cs_symbol_sampletransaction
+namespace CsSymbolSampleTransaction
 {
     class Program
     {
