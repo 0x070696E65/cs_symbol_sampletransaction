@@ -65,6 +65,9 @@ namespace CsSymbolSampleTransaction
             var message = Encoding.UTF8.GetBytes(("Hello Symbol!").Replace("-", ""));
             var messageSize = BitConverter.GetBytes((ushort)(Encoding.UTF8.GetBytes("Hello Symbol!").Length + 1));
 
+            Console.WriteLine(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
+            Console.WriteLine((ulong)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds + 7200 - 1637848847) * 1000);
+
             // トランザクション署名
             var verifiableBody = Utils.ToHex(version)
                 + Utils.ToHex(networkType)
@@ -99,6 +102,7 @@ namespace CsSymbolSampleTransaction
                 + Utils.ToHex(alicePublicKey)
                 + "00000000"
                 + verifiableBody;
+            Console.WriteLine(payloadString);
 
             var httpClient = new HttpClient();
             var payload = new StringContent("{ \"payload\" : \"" + payloadString + "\"}");
@@ -107,15 +111,15 @@ namespace CsSymbolSampleTransaction
             Console.WriteLine(response.Headers);
             Console.WriteLine(response.RequestMessage);
 
-            // 確認
-            var hashableBuffer =
-                new List<byte>(signature.Length + alicePublicKey.Length + verifiableBuffer.Length);
-            hashableBuffer.AddRange(signature);
-            hashableBuffer.AddRange(alicePublicKey);
-            hashableBuffer.AddRange(verifiableBuffer);
+            var hashableBuffer = Utils.GetBytes(
+                Utils.ToHex(signature)
+                + Utils.ToHex(alicePublicKey)
+                + verifiableString
+                );
+
             //var sha3256Digest = new Sha3Digest(256); 32行目で作成しているので使いまわし
             var transactionHash = new byte[sha3256Digest.GetDigestSize()];
-            sha3256Digest.BlockUpdate(hashableBuffer.ToArray(), 0, hashableBuffer.Count);
+            sha3256Digest.BlockUpdate(hashableBuffer, 0, hashableBuffer.Length);
             sha3256Digest.DoFinal(transactionHash, 0);
 
             Console.WriteLine("transactionStatus: https://sym-test-02.opening-line.jp:3001/transactionStatus/" + Utils.ToHex(transactionHash));
