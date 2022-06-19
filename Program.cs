@@ -41,6 +41,7 @@ namespace CsSymbolSampleTransaction
             var decodedAddress = new byte[24];
             decodedAddress[0] = 152;
             Array.Copy(ripemdHash, 0, decodedAddress, 1, 20);
+
             var hash = new byte[20 + 1];
             Array.Copy(decodedAddress, hash, 20 + 1);
             var resultHash = new byte[sha3256Digest.GetDigestSize()];
@@ -56,9 +57,7 @@ namespace CsSymbolSampleTransaction
             var networkType = new byte[] { 152 };
             var transactionType = BitConverter.GetBytes((ushort)16724);
             var fee = BitConverter.GetBytes((ulong)16000);
-            var deadlineDateTime = DateTime.Now.ToUniversalTime().AddHours(2).AddSeconds(-1637848847);
-            var unixOriginTime = new DateTime(1970, 1, 1, 0, 0, 0);
-            var deadline = BitConverter.GetBytes((ulong)Math.Floor((deadlineDateTime - unixOriginTime).TotalMilliseconds));
+            var deadline = BitConverter.GetBytes((ulong)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds + 7200 - 1637848847) * 1000);
             var recipientAddress = Base32.FromBase32String("ADDRESS");
             var mosaicCount = new byte[] { 1 };
             var mosaicId = BitConverter.GetBytes((ulong)BigInteger.Parse("3A8416DB2D53B6C8", NumberStyles.HexNumber));
@@ -89,6 +88,8 @@ namespace CsSymbolSampleTransaction
             signer.BlockUpdate(verifiableBuffer, 0, verifiableBuffer.Length);
             var signature = signer.GenerateSignature();
 
+            Console.WriteLine(verifiableBody);
+            
             // トランザクションの通知
             var transactionSize = BitConverter.GetBytes((uint)Utils.GetBytes(verifiableBody).Length + 108);
 
@@ -112,7 +113,7 @@ namespace CsSymbolSampleTransaction
             hashableBuffer.AddRange(signature);
             hashableBuffer.AddRange(alicePublicKey);
             hashableBuffer.AddRange(verifiableBuffer);
-            //var sha3256Digest = new Sha3Digest(256); 36行目で作成しているので使いまわし
+            //var sha3256Digest = new Sha3Digest(256); 32行目で作成しているので使いまわし
             var transactionHash = new byte[sha3256Digest.GetDigestSize()];
             sha3256Digest.BlockUpdate(hashableBuffer.ToArray(), 0, hashableBuffer.Count);
             sha3256Digest.DoFinal(transactionHash, 0);
