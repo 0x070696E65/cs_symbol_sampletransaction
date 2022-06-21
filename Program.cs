@@ -56,11 +56,9 @@ namespace CsSymbolSampleTransaction
             var mosaicCount = new byte[] { 1 };
             var mosaicId = BitConverter.GetBytes((ulong)BigInteger.Parse("3A8416DB2D53B6C8", NumberStyles.HexNumber));
             var mosaicAmount = BitConverter.GetBytes((ulong)100);
-            var message = Encoding.UTF8.GetBytes(("Hello Symbol!").Replace("-", ""));
-            var messageSize = BitConverter.GetBytes((ushort)(Encoding.UTF8.GetBytes("Hello Symbol!").Length + 1));
-
-            Console.WriteLine(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
-            Console.WriteLine((ulong)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds + 7200 - 1637848847) * 1000);
+            var messageStr = "Hello Symbol!";
+            var message = Encoding.UTF8.GetBytes(messageStr.Replace("-", ""));
+            var messageSize = BitConverter.GetBytes((ushort)(Encoding.UTF8.GetBytes(messageStr).Length + 1));
 
             // トランザクション署名
             var verifiableBody = Utils.ToHex(version)
@@ -84,8 +82,6 @@ namespace CsSymbolSampleTransaction
             signer.Init(true, new Ed25519PrivateKeyParameters(alicePrivateKey, 0));
             signer.BlockUpdate(verifiableBuffer, 0, verifiableBuffer.Length);
             var signature = signer.GenerateSignature();
-
-            Console.WriteLine(verifiableBody);
             
             // トランザクションの通知
             var transactionSize = BitConverter.GetBytes((uint)Utils.GetBytes(verifiableBody).Length + 108);
@@ -96,7 +92,6 @@ namespace CsSymbolSampleTransaction
                 + Utils.ToHex(alicePublicKey)
                 + "00000000"
                 + verifiableBody;
-            Console.WriteLine(payloadString);
 
             var httpClient = new HttpClient();
             var payload = new StringContent("{ \"payload\" : \"" + payloadString + "\"}");
