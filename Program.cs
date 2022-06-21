@@ -43,8 +43,7 @@ namespace CsSymbolSampleTransaction
             sumHasher.DoFinal(preSumHash, 0);
             var sumHash = new byte[3];
             Array.Copy(preSumHash, sumHash, 3);
-            var aliceAddress = Base32.ToBase32String(Utils.GetBytes("98" + Utils.ToHex(addressBody) + Utils.ToHex(sumHash)));
-            aliceAddress = aliceAddress.Substring(0, aliceAddress.Length);
+            var aliceAddress = Base32.ToBase32String(Utils.GetBytes("98" + Utils.ToHex(addressBody) + Utils.ToHex(sumHash))).Substring(0, 39);
             Console.WriteLine(aliceAddress);
 
             // トランザクション構築
