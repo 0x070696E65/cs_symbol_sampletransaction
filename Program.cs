@@ -29,28 +29,23 @@ namespace CsSymbolSampleTransaction
             Console.WriteLine(Utils.ToHex(alicePublicKey));
 
             // 公開鍵からのアドレス導出
-            var sha3256Digest = new Sha3Digest(256);
-            var sha3256Hash = new byte[sha3256Digest.GetDigestSize()];
-            sha3256Digest.BlockUpdate(alicePublicKey, 0, alicePublicKey.Length);
-            sha3256Digest.DoFinal(sha3256Hash, 0);
-            var digest = new RipeMD160Digest();
-            var ripemdHash = new byte[digest.GetDigestSize()];
-            digest.BlockUpdate(sha3256Hash, 0, sha3256Hash.Length);
-            digest.DoFinal(ripemdHash, 0);
-
-            var decodedAddress = new byte[24];
-            decodedAddress[0] = 152;
-            Array.Copy(ripemdHash, 0, decodedAddress, 1, 20);
-
-            var hash = new byte[20 + 1];
-            Array.Copy(decodedAddress, hash, 20 + 1);
-            var resultHash = new byte[sha3256Digest.GetDigestSize()];
-            sha3256Digest.BlockUpdate(hash, 0, hash.Length);
-            sha3256Digest.DoFinal(resultHash, 0);
-            Array.Copy(resultHash, 0, decodedAddress, 20 + 1, 3);
-            var padded = new byte[24 + 1];
-            Array.Copy(decodedAddress, padded, decodedAddress.Length);
-            Console.WriteLine(Base32.ToBase32String(padded).Substring(0, 39));
+            var addressHasher = new Sha3Digest(256);
+            var publicKeyHash = new byte[addressHasher.GetDigestSize()];
+            addressHasher.BlockUpdate(alicePublicKey, 0, alicePublicKey.Length);
+            addressHasher.DoFinal(publicKeyHash, 0);
+            var addressBodyHasher = new RipeMD160Digest();
+            var addressBody = new byte[addressBodyHasher.GetDigestSize()];
+            addressBodyHasher.BlockUpdate(publicKeyHash, 0, publicKeyHash.Length);
+            addressBodyHasher.DoFinal(addressBody, 0);
+            var sumHasher = new Sha3Digest(256);
+            var preSumHash = new byte[sumHasher.GetDigestSize()];
+            sumHasher.BlockUpdate(Utils.GetBytes("98" + Utils.ToHex(addressBody)), 0, 21);
+            sumHasher.DoFinal(preSumHash, 0);
+            var sumHash = new byte[3];
+            Array.Copy(preSumHash, sumHash, 3);
+            var aliceAddress = Base32.ToBase32String(Utils.GetBytes("98" + Utils.ToHex(addressBody) + Utils.ToHex(sumHash)));
+            aliceAddress = aliceAddress.Substring(0, aliceAddress.Length);
+            Console.WriteLine(aliceAddress);
 
             // トランザクション構築
             var version = new byte[] { 1 };
@@ -117,10 +112,10 @@ namespace CsSymbolSampleTransaction
                 + verifiableString
                 );
 
-            //var sha3256Digest = new Sha3Digest(256); 32行目で作成しているので使いまわし
-            var transactionHash = new byte[sha3256Digest.GetDigestSize()];
-            sha3256Digest.BlockUpdate(hashableBuffer, 0, hashableBuffer.Length);
-            sha3256Digest.DoFinal(transactionHash, 0);
+            var hasher = new Sha3Digest(256);
+            var transactionHash = new byte[hasher.GetDigestSize()];
+            hasher.BlockUpdate(hashableBuffer, 0, hashableBuffer.Length);
+            hasher.DoFinal(transactionHash, 0);
 
             Console.WriteLine("transactionStatus: https://sym-test-02.opening-line.jp:3001/transactionStatus/" + Utils.ToHex(transactionHash));
             Console.WriteLine("confirmed: https://sym-test-02.opening-line.jp:3001/transactions/confirmed/" + Utils.ToHex(transactionHash));
